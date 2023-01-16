@@ -16,9 +16,9 @@ services:
       - backend
 
 
-  db:
+  postgres:
     restart: always
-    container_name: db
+    container_name: postgres
     image: postgres:latest
     hostname: ${POSTGRES_HOST}
     ports:
@@ -30,7 +30,52 @@ services:
     networks:
       - backend
     volumes:
+      - postgres_data:/var/lib/postgresql/data
       - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d
+
+  pgadmin:
+    restart: always
+    links:
+      - postgres:postgres
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/root/.pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    networks:
+      - backend
+
+  redis:
+    image: "redis:alpine"
+    container_name: redis
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+ 
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    environment:
+      REDIS_HOSTS: redis
+      REDIS_HOST: redis
+      REDIS_PORT: redis:${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      HTTP_USER: ${COMMANDER_USERNAME}
+      HTTP_PASSWORD: ${COMMANDER_PASSWORD}
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - backend
 
   user-app:
     build: ./user
@@ -44,9 +89,9 @@ services:
     networks:
       - backend
     depends_on:
-      - db
+      - postgres
     links:
-      - db
+      - postgres
 
   wallet-app:
     build: ./wallet
@@ -58,9 +103,9 @@ services:
     networks:
       - backend
     depends_on:
-      - db
+      - postgres
     links:
-      - db
+      - postgres
 
 networks:
   backend:
@@ -69,5 +114,11 @@ networks:
 volumes:
   rabbitmq_data:
     name: rabbitmq_data
+  postgres_data:
+    name: postgres_data
+  pgadmin_data:
+    name: pgadmin_data
+  redis_data:
+    name: redis_data
   rabbitmq_log:
     name: rabbitmq_log
