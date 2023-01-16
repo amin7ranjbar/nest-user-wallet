@@ -15,26 +15,28 @@ services:
     networks:
       - backend
 
-  user-db:
+
+  db:
     restart: always
-    container_name: user-db
+    container_name: db
     image: postgres:latest
-    hostname: ${USER_DB_HOST}
+    hostname: ${POSTGRES_HOST}
     ports:
-      - ${USER_DB_PORT}:5432
+      - 5432:5432
     environment:
+      - POSTGRES_MULTIPLE_DATABASES=${WALLET_DB_NAME},${USER_DB_NAME}
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${USER_DB_NAME}
     networks:
       - backend
+    volumes:
+      - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d
 
   user-app:
     build: ./user
     container_name: user-app
     image: app/user
     restart: always
-    hostname: user-app
     ports:
       - 3000:3000
     volumes:
@@ -42,35 +44,23 @@ services:
     networks:
       - backend
     depends_on:
-      - user-db
-
-
-  wallet-db:
-    restart: always
-    container_name: wallet-db
-    image: postgres:latest
-    hostname: ${WALLET_DB_HOST}
-    ports:
-      - ${WALLET_DB_PORT}:5432
-    environment:
-      - POSTGRES_USER=${POSTGRES_USERNAME}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${WALLET_DB_NAME}
-    networks:
-      - backend
+      - db
+    links:
+      - db
 
   wallet-app:
     build: ./wallet
     container_name: wallet-app
     image: app/wallet
     restart: always
-    hostname: wallet-app
     volumes:
       - .env:/var/www/app/.env
     networks:
       - backend
     depends_on:
-      - wallet-db
+      - db
+    links:
+      - db
 
 networks:
   backend:
