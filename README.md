@@ -20,7 +20,7 @@ sudo docker-compose run -d
 ```
 
 #### Environment
-Create **.env** file like [.env.example](https://github.com/amin7ranjbar/nest-user-wallet.git/blob/main/.env.example)
+Create **.env** file like [.env.example](https://github.com/amin7ranjbar/nest-user-wallet/blob/main/.env.example)
 
 #### Running the app
 - development
