@@ -1,9 +1,15 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from '../entity';
+import { RmqService } from 'nest-rabbitmq';
 
 @Module({
+  imports: [
+    TypeOrmModule.forFeature([UserEntity]),
+  ],
   controllers: [UserController],
-  providers: [UserService]
+  providers: [UserService, RmqService]
 })
 export class UserModule {}

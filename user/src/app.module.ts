@@ -13,7 +13,6 @@ import { UserEntity } from './entity';
       uri: process.env.RABBITMQ_URL,
     }),
     TypeOrmModule.forRoot(dataSource.options),
-    TypeOrmModule.forFeature([UserEntity]),
     UserModule
   ]
 })

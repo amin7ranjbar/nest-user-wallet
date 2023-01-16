@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from "@nestjs/config";
-import { UserModule } from './user/user.module';
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { RmqModule } from "nest-rabbitmq";
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSource } from './config';
-import { UserEntity } from './entity';
+import { WalletEntity } from './entity';
+import { WalletService } from './service/wallet.service';
+import { Redis } from 'ioredis';
 
 @Module({
   imports: [
@@ -13,8 +14,21 @@ import { UserEntity } from './entity';
       uri: process.env.RABBITMQ_URL,
     }),
     TypeOrmModule.forRoot(dataSource.options),
-    TypeOrmModule.forFeature([UserEntity]),
-    UserModule
+    TypeOrmModule.forFeature([WalletEntity]),
+  ],
+  providers: [
+    {
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return new Redis({
+          port: configService.get('REDIS_PORT'), // Redis port
+          host: configService.get('REDIS_HOST'), // Redis host
+          password: configService.get('REDIS_PASSWORD'),
+        });;
+      },
+      provide: 'REDIS',
+    },
+    WalletService
   ]
 })
 export class AppModule {}
