@@ -10,11 +10,11 @@ const configService = new ConfigService();
 
 export const dataSource = new DataSource({
   type: 'postgres',
-  host: configService.get('USER_DB_HOST'),
-  port: configService.get('USER_DB_PORT'),
+  host: configService.get('WALLET_DB_HOST'),
+  port: configService.get('WALLET_DB_PORT'),
   username: configService.get('POSTGRES_USERNAME'),
   password: configService.get('POSTGRES_PASSWORD'),
-  database: configService.get('USER_DB_NAME'),
+  database: configService.get('WALLET_DB_NAME'),
   synchronize: false,
   logging: ['error'],
   entities,
